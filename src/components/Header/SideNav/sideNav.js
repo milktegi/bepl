@@ -19,7 +19,8 @@ const sideNavigation = (props) => {
         }}
         >
          {/**이 부분에서 sidenav의 option을 렌더링 */}
-         <SideNavItems/>
+         <SideNavItems {...props}
+         />
         </SideNav>
       </div>
     )

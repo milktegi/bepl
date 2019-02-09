@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styles from './signin.css';
 import FormField from '../widgets/FormFields/formfields';
+import { firebase } from '../../firebase';
 
 class SignIn extends Component {
   state = {
@@ -25,7 +26,7 @@ class SignIn extends Component {
       },
       password: {
         element: 'input',
-        value: '', 
+        value: '',
         config: {
           name: 'password_input',
           type: 'password',
@@ -37,7 +38,8 @@ class SignIn extends Component {
         },
         valid: false,
         touched: false,
-        validationMessage: ''
+        validationMessage: '',
+   
       }
     }
   };
@@ -55,16 +57,15 @@ class SignIn extends Component {
     // 유저입력값을 저장
     newElement.value = element.event.target.value;
 
-   
     if (element.blur) {
       let validData = this.validate(newElement);
       // console.log(validData);
-			newElement.valid = validData[0];
-			newElement.validationMessage = validData[1];
+      newElement.valid = validData[0];
+      newElement.validationMessage = validData[1];
     }
-		 // 해당 유저에
+    // 해당 유저에
     // 업데이트 엘리먼트를 대입
-		newElement.touched = element.blur;
+    newElement.touched = element.blur;
     newFormdata[element.id] = newElement;
 
     // 상태 업데이트
@@ -73,66 +74,93 @@ class SignIn extends Component {
     });
   };
 
-  submitButton = () => (
-    this.state.loading ?
-    'loading...' :
-    <div>
-      <button
-      onClick={(event)=> this.submitForm(event, false)}
-      >
-      지금 회원 가입
-      </button>
-      <button 
-      onClick={(event)=> this.submitForm(event, true)}
-      >
+  submitButton = () =>
+    this.state.loading ? (
+      'loading...'
+    ) : (
+      <div>
+        <button onClick={event => this.submitForm(event, false)}>
+          지금 회원 가입
+        </button>
+        <button onClick={event => this.submitForm(event, true)}>로그인</button>
+      </div>
+    );
 
-        로그인
-      </button>
-    </div>
-  )
+  showError = () => {
+    this.state.registerError !== '' ? (
+      <div className={styles.error}>{this.state.registerError}</div>
+    ) : (
+      ''
+    );
+  };
 
   submitForm = (event, type) => {
     event.preventDefault();
-    if(type !== null){
+    if (type !== null) {
       let dataToSubmit = {};
       let formIsValid = true;
 
-      for(let key in this.state.formdata){
-        dataToSubmit[key] = this.state.formdata[key].value
+      for (let key in this.state.formdata) {
+        dataToSubmit[key] = this.state.formdata[key].value;
       }
-      for(let key in this.state.formdata){
+      for (let key in this.state.formdata) {
         formIsValid = this.state.formdata[key].valid && formIsValid;
-
       }
-      if(formIsValid){
+      if (formIsValid) {
         // console.log(dataToSubmit)
-        // 가입 아니면 로그인 
-        this.setState = ({
+        // 가입 아니면 로그인
+        this.setState = {
           loading: true,
           registerError: ''
-        })
-        if(type){
-          console.log('login')
+        };
+        if (type) {
+          // console.log('login')
+          firebase
+            .auth()
+            .signInWithEmailAndPassword(
+              dataToSubmit.email,
+              dataToSubmit.password
+            )
+            .then(() => {
+              this.props.history('/');
+            })
+            .catch((err) => {
+              this.setState({
+                loading: false,
+                registerError: err.message
+              });
+            });
         } else {
-          console.log('register')
-
+          // console.log('register')
+          firebase
+            .auth()
+            .createUserWithEmailAndPassword(
+              dataToSubmit.email,
+              dataToSubmit.password
+            )
+            .then(() => {
+              this.props.history.push('/');
+            })
+            .catch(err => {
+              this.setState({
+                loading: false,
+                registerError: err.message
+              });
+            });
         }
       }
     }
-  }
-
-
+  };
 
   validate = element => {
     let error = [true, ''];
 
-		if (element.validation.email) {
-      const valid = /\S+@\S+\.\S+/.test(element.value)
+    if (element.validation.email) {
+      const valid = /\S+@\S+\.\S+/.test(element.value);
       const message = ` ${!valid ? '유효한 이메일을' : ''}
 			`;
       error = !valid ? [valid, message] : error;
     }
-
 
     if (element.validation.password) {
       const valid = element.value.length >= 5;
@@ -153,7 +181,7 @@ class SignIn extends Component {
   render() {
     return (
       <div className={styles.logContainer}>
-        <form onSubmit={(event)=> this.submitForm(event, null)}>
+        <form onSubmit={event => this.submitForm(event, null)}>
           <h2>회원가입 / 로그인 </h2>
           <FormField
             id={'email'}
@@ -166,7 +194,8 @@ class SignIn extends Component {
             change={element => this.updateForm(element)}
           />
 
-          { this.submitButton() }
+          {this.submitButton()}
+          {this.showError()}
         </form>
       </div>
     );
