@@ -83,7 +83,7 @@ class VideosList extends Component {
   renderTitle = () => {
     return this.props.title ? (
       <h3>
-        <strong>NBA</strong> Videos
+        <strong>England Premier League</strong> Videos
       </h3>
     ) : null;
   };
