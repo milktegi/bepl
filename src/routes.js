@@ -9,6 +9,7 @@ import NewsMain from './components/Articles/News/Main/index';
 import VideosMain from 
 './components/Articles/Videos/Main/index'
 import SignIn from './components/singin/signin';
+import Dashboard from './components/Dashboard/dashboard';
 
 const Routes = (props) => {
 
@@ -25,6 +26,7 @@ const Routes = (props) => {
           <Route path="/videos"
           exact component={VideosMain}/>  
           <Route path="/sign-in" exact component={SignIn}/>
+          <Route path="/dashboard" exact component={Dashboard}/>
         </Switch>
       </Layout>
     );
